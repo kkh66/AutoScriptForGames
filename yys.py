@@ -11,7 +11,7 @@ def openYysAuto():
     img_announce = cv2.imread("yys/04.png", cv2.IMREAD_GRAYSCALE)
     img_enter = cv2.imread("yys/05.png", cv2.IMREAD_GRAYSCALE)
 
-    print "opening application..."
+    print("opening application...")
     start_menu = bf.findLocWithKp(img_start)
     bf.animateMoveAndClick(bf.getCurPos(), start_menu)
     time.sleep(2)
@@ -19,7 +19,7 @@ def openYysAuto():
     bf.animateMoveAndClick(bf.getCurPos(), mumu)
     counter = 0
     while True:
-        print "waiting..."
+        print("waiting...")
         counter += 1
         yys = bf.findLocWithKp(img_yys)
         if yys[0] != 0 and yys[1] != 0:
@@ -27,7 +27,7 @@ def openYysAuto():
         if counter > 15:
             exit()
         time.sleep(5)
-    print "opening game..."
+    print("opening game...")
 
     bf.animateMoveAndClick(bf.getCurPos(), yys)
     time.sleep(15)
@@ -77,7 +77,7 @@ def juexingAuto(type, times=5):
     time.sleep(2)
 
     for i in range(times):
-        print i + 1, '/', times
+        print("i + 1, '/', times")
         challenge = bf.findLocWithKp(img_challenge)
         bf.animateMoveAndClick(bf.getCurPos(), challenge)
         time.sleep(10)
@@ -87,7 +87,7 @@ def juexingAuto(type, times=5):
 
         counter = 0
         while True:
-            print "waiting..."
+            print("waiting...")
             counter += 1
             confirm = bf.findLocWithKp(img_confirm)
             if confirm[0] != 0 and confirm[1] != 0:

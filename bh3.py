@@ -15,7 +15,7 @@ def openBh3Auto():
     img_daily = cv2.imread("bh3/17.png", cv2.IMREAD_GRAYSCALE)
     img_confirm = cv2.imread("bh3/18.png", cv2.IMREAD_GRAYSCALE)
 
-    print "opening application..."
+    print( "opening application...")
     start_menu = bf.findLocWithKp(img_start)
     bf.animateMoveAndClick(bf.getCurPos(), start_menu)
     time.sleep(2)
@@ -23,7 +23,7 @@ def openBh3Auto():
     bf.animateMoveAndClick(bf.getCurPos(), mumu)
     counter = 0
     while True:
-        print "waiting..."
+        print("waiting...")
         counter += 1
         bengbengbeng = bf.findLocWithKp(img_beng)
         if bengbengbeng[0] != 0 and bengbengbeng[1] != 0:
@@ -31,12 +31,12 @@ def openBh3Auto():
         if counter > 15:
             exit()
         time.sleep(5)
-    print "opening game..."
+    print("opening game...")
 
     bf.animateMoveAndClick(bf.getCurPos(), bengbengbeng)
     counter = 0
     while True:
-        print "waiting..."
+        print("waiting...")
         login = bf.findLocWithKp(img_login)
         if login[0] != 0 and login[1] != 0:
             break
@@ -68,7 +68,7 @@ def collectCoinsAuto():
 
     counter = 0
     while True:
-        print "waiting..."
+        print("waiting...")
         counter += 1
         base = bf.findLocWithKp(img_base)
         if base[0] != 0 and base[1] != 0:
@@ -111,7 +111,7 @@ def adventureAuto():
     loc2 = bf.findLocWithKp(img_refresh)
     y_start = loc1[1]
     y_end = loc2[1]
-    print y_start, y_end
+    print(y_start, y_end)
     y_range = y_end - y_start
 
     task1_y_start = int(y_start + 0.194 * y_range)

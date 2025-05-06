@@ -1,4 +1,3 @@
-# coding=utf-8
 import win32api, win32gui, win32con
 from ctypes import *
 import time
@@ -6,7 +5,21 @@ from PIL import ImageGrab as ig
 import cv2
 import numpy as np
 
-SCREEN_SCALE_FACTOR = 1.25
+def get_screen_scale_factor():
+    try:
+        import ctypes
+        user32 = ctypes.windll.user32
+        user32.SetProcessDPIAware()
+        dc = user32.GetDC(0)
+        dpi_x = ctypes.windll.gdi32.GetDeviceCaps(dc, 88)  # LOGPIXELSX
+        user32.ReleaseDC(0, dc)
+        return dpi_x / 96.0  # 96 DPI是标准比例
+    except Exception as e:
+        print(f"无法获取屏幕缩放比例: {e}")
+        return 1.0  # 如果获取失败，返回1.0（无缩放）
+
+SCREEN_SCALE_FACTOR = get_screen_scale_factor()
+print(f"当前屏幕缩放比例: {SCREEN_SCALE_FACTOR}")
 
 
 def getCurPos():
@@ -16,12 +29,20 @@ def getCurPos():
 def getPos():
     while True:
         res = getCurPos()
-        print res
+        print("",res)
         time.sleep(1)
 
 
-def clickLeft():
-    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN | win32con.MOUSEEVENTF_LEFTUP, 0, 0)
+def clickLeft(x=None, y=None):
+    """点击鼠标左键，可选择在指定位置点击"""
+    if x is not None and y is not None:
+        # 先移动到目标位置
+        windll.user32.SetCursorPos(x, y)
+        time.sleep(0.1)  # 稍作停顿确保移动完成
+    # 然后点击
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+    time.sleep(0.05)  # 短暂等待以模拟真实点击
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
 
 
 def movePos(x, y):
@@ -68,6 +89,28 @@ def animateMoveAndClick(curPos, targetPos, durTime=1, fps=60, waitTime=1):
     time.sleep(waitTime)
     clickLeft()
 
+def animateMoveAnddoubleClick(curPos, targetPos, durTime=1, fps=60, waitTime=1):
+    x1 = curPos[0]
+    y1 = curPos[1]
+    x2 = targetPos[0]
+    y2 = targetPos[1]
+    dx = x2 - x1
+    dy = y2 - y1
+    times = int(fps * durTime)
+    dx_ = dx * 1.0 / times
+    dy_ = dy * 1.0 / times
+    sleep_time = durTime * 1.0 / times
+
+    for i in range(times):
+        int_temp_x = int(round(x1 + (i + 1) * dx_))
+        int_temp_y = int(round(y1 + (i + 1) * dy_))
+        windll.user32.SetCursorPos(int_temp_x, int_temp_y)
+        time.sleep(sleep_time)
+    windll.user32.SetCursorPos(x2, y2)
+    time.sleep(waitTime)
+    clickLeft()
+    clickLeft()
+
 
 def getSiftKps(img, numKps=2000):
     """
@@ -77,8 +120,8 @@ def getSiftKps(img, numKps=2000):
     :param numKps:期望提取的特征点个数，默认2000
     :return:特征点和对应的描述子
     """
-    sift = cv2.xfeatures2d_SIFT.create(nfeatures=numKps)
-    kp, des = cv2.xfeatures2d_SIFT.detectAndCompute(sift, img, None)
+    sift = cv2.SIFT_create(nfeatures=numKps)
+    kp, des = sift.detectAndCompute(img, None)
     return kp, des
 
 
@@ -97,7 +140,7 @@ def flannMatch(kp1, des1, kp2, des2):
     good_kps1 = []
     good_kps2 = []
 
-    print("kp1 num:" + len(kp1).__str__() + "," + "kp2 num:" + len(kp2).__str__())
+    print(f"kp1 num: {len(kp1)}, kp2 num: {len(kp2)}")
 
     # FLANN parameters
     FLANN_INDEX_KDTREE = 0
@@ -118,7 +161,7 @@ def flannMatch(kp1, des1, kp2, des2):
         print("No enough good matches.")
         return good_kps1, good_kps2
     else:
-        print("good matches:" + good_matches.__len__().__str__())
+        print(f"good matches: {len(good_matches)}")
         return good_kps1, good_kps2
 
 
@@ -141,7 +184,7 @@ def findLocWithTemplate(img):
     h = img.shape[0]
     w = img.shape[1]
     screen = ig.grab()
-    print "finding location..."
+    print ("finding location...")
     screen_cv = cv2.cvtColor(np.asarray(screen), cv2.COLOR_RGB2GRAY)
     res = cv2.matchTemplate(screen_cv, img, cv2.TM_CCOEFF)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
